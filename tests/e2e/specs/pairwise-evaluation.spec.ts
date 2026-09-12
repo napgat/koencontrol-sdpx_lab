@@ -31,4 +31,14 @@ test.describe("Pairwise evaluation", () => {
 
     await expect(evaluationPage.pairProgress).toHaveText("PAIR 4 / 5");
   });
+    // Temporary trace: Story 4 draft-save flow; UI guard before a choice is made.
+  test("student cannot save a draft before selecting a candidate", async ({
+    page,
+  }) => {
+    const evaluationPage = new PairwiseEvaluationPage(page);
+
+    await evaluationPage.goto();
+
+    await expect(evaluationPage.saveDraftButton).toBeDisabled();
+  });
 });
