@@ -3,15 +3,18 @@
 ## Project
 PairEval — ระบบประเมินผลนักศึกษาแบบ Pairwise Comparison สำหรับการให้คะแนนแบบอิงกลุ่ม/เดี่ยว
 
-## Setup & Commands
-- install: `npm install`
-- dev:     `npm run dev`
-- test:    `npm run test`
-- lint:    `npm run lint`
-- build:   `npm run build`
+## Setup
+- install local tooling: `npm ci`
+
+## Commands
+- dev:        `docker compose up`
+- unit test:  `docker compose -f compose.test.yaml up unit --abort-on-container-exit --exit-code-from unit`
+- e2e:        `docker compose -f compose.test.yaml --profile e2e up e2e --abort-on-container-exit --exit-code-from e2e`
+- teardown:   `docker compose -f compose.test.yaml --profile e2e down -v --remove-orphans`
+- lint:       `npm run lint`
 
 ## Conventions
-- ภาษา: TypeScript (Next.js 14 App Router)
+- ภาษา: TypeScript (Next.js 16 App Router)
 - ใช้ `data-testid` กับ element ที่ test จะอ้างถึง
 - Commit ตาม Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`)
 - Branch: ทำงานบน `feature/*` แล้ว PR เข้า `develop`
