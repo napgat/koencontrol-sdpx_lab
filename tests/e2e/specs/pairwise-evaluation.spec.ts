@@ -19,8 +19,8 @@ test.describe("Pairwise evaluation", () => {
   });
 
   // Trace: GitHub Issue #3 — https://github.com/napgat/koencontrol-sdpx_lab/issues/3
-  // AC (partially covered): Selecting an outcome and choosing Next Pair displays
-  // the next assigned pair. Preserving the current selection state needs a separate test.
+  // AC: Given I am evaluating my assigned pairs, when I select an outcome for
+  // the current pair and choose Next Pair, then the system displays the next assigned pair.
   test("student advances to the next pair after making a selection", async ({
     page,
   }) => {
