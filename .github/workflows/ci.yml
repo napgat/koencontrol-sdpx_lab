@@ -1,13 +1,84 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  smoke:
+  lint-and-unit-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - run: echo "Pipeline works!"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Unit tests with coverage
+        run: npm run test:coverage -- --reporter=default --reporter=junit --outputFile.junit=test-results/unit.xml
+
+      - name: Unit test summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f test-results/unit.xml ]; then
+            python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import xml.etree.ElementTree as ET
+          root = ET.parse("test-results/unit.xml").getroot()
+          tests = int(root.get("tests", "0"))
+          failures = int(root.get("failures", "0"))
+          errors = int(root.get("errors", "0"))
+          skipped = sum(int(s.get("skipped", "0")) for s in root.findall("testsuite"))
+          print(f"### Unit tests\n\n{tests - failures - errors - skipped} passed, {failures + errors} failed, {skipped} skipped")
+          PY
+          else
+            echo "### Unit test report unavailable" >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-${{ github.sha }}
+          path: docs/coverage/
+          if-no-files-found: ignore
+  e2e-tests:
+    needs: lint-and-unit-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Run E2E in containers
+        run: docker compose -f compose.test.yaml --profile e2e up e2e --abort-on-container-exit --exit-code-from e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ github.sha }}
+          path: playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Clean up test containers
+        if: always()
+        run: docker compose -f compose.test.yaml --profile e2e down -v --remove-orphans
