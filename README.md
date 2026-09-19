@@ -25,4 +25,4 @@ docker compose up
 จึงไม่คัดลอกไฟล์เก่าทับ source ปัจจุบันหรือสร้าง snapshot ซ้ำ
 repo เดิมยังเก็บไว้เป็นหลักฐาน commit และ deployment ของ Lab 01
 
-การเชื่อม Vercel เข้ากับ repository นี้เป็นงานแยกต่างหาก และยังไม่ถือว่าเสร็จจากการจัดเอกสารครั้งนี้
+แอปจาก branch `main` deploy บน Vercel ที่ [koencontrol-sdpx-lab.vercel.app](https://koencontrol-sdpx-lab.vercel.app/)

@@ -17,7 +17,7 @@
 ## Repository Policy
 
 - Lab 01–05 ใช้ repository นี้เป็น source และเอกสารร่วมกัน โดย source ที่ root เป็นเวอร์ชันที่พัฒนาต่อเนื่อง
-- Repository เดิมของ Lab 01 ยังคงเป็นหลักฐานประวัติ Git และ deployment ที่ส่งไปแล้ว; การย้ายการเชื่อม Vercel ยังไม่ได้ทำในขั้นนี้
+- Repository เดิมของ Lab 01 ยังคงเป็นหลักฐานประวัติ Git และ deployment ที่ส่งไปแล้ว; [Vercel ปัจจุบัน](https://koencontrol-sdpx-lab.vercel.app/) deploy จาก `main` ของ repository นี้
 - เอกสารในโฟลเดอร์นี้เป็นข้อมูลอ้างอิงสำหรับการเรียนและการ Demo
 - ห้ามบันทึก `.env`, token, password หรือ secret จริงลงในเอกสาร
 - AI Memory ไม่ได้รวมไว้ในชุดเอกสารสำหรับสมาชิก เนื่องจากเป็นบันทึกการทำงานเฉพาะเครื่องและ Agent
