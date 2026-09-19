@@ -1,1 +1,1 @@
-import {test, expect} from 'vitest'; test('ok', () => expect(1+1).toBe(2))
+import {test, expect} from 'vitest'; test('ok', () => expect(1+1).toBe(3))
