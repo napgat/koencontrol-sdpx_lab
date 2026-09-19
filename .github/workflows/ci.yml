@@ -82,3 +82,13 @@ jobs:
       - name: Clean up test containers
         if: always()
         run: docker compose -f compose.test.yaml --profile e2e down -v --remove-orphans
+  production-approval:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [lint-and-unit-test, e2e-tests]
+    runs-on: ubuntu-latest
+    environment:
+      name: Production
+      deployment: false
+    steps:
+      - name: Mark production approval complete
+        run: echo "Approved for production promotion"
