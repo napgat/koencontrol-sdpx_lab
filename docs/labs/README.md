@@ -8,7 +8,7 @@
 
 | Lab | Prepared | Instruction | หมายเหตุ |
 | --- | --- | --- | --- |
-| Lab 01 | [Prepared](./lab-01/01-prepared.md) | [Instruction](./lab-01/02-instruction.md) | Source และ Vercel แยกอยู่ใน [Lab 01 repository](https://github.com/napgat/sdpx-lab-ai-01-koencontrol) |
+| Lab 01 | [Prepared](./lab-01/01-prepared.md) | [Instruction](./lab-01/02-instruction.md) | Source เป็นฐานของแอปใน repo นี้; [repo เดิม](https://github.com/napgat/sdpx-lab-ai-01-koencontrol) เก็บหลักฐานการส่งและ deployment |
 | Lab 02 | [Prepared](./lab-02/01-prepared.md) | [Instruction](./lab-02/02-instruction.md) | มี [prepared artifacts](./lab-02/prepared-artifacts/) เพิ่มเติม |
 | Lab 03 | [Prepared](./lab-03/01-prepared.md) | [Instruction](./lab-03/02-instruction.md) | ใช้ source ที่ต่อยอดจาก Lab 02 |
 | Lab 04 | [Prepared](./lab-04/01-prepared.md) | [Instruction](./lab-04/02-instruction.md) | ใช้ source ที่ต่อยอดจาก Lab 03 |
@@ -16,8 +16,8 @@
 
 ## Repository Policy
 
-- Lab 01 ใช้ repository แยก เนื่องจากเชื่อมกับ Vercel
-- Lab 02–05 ใช้ repository นี้เป็นหลักฐานร่วมกัน
+- Lab 01–05 ใช้ repository นี้เป็น source และเอกสารร่วมกัน โดย source ที่ root เป็นเวอร์ชันที่พัฒนาต่อเนื่อง
+- Repository เดิมของ Lab 01 ยังคงเป็นหลักฐานประวัติ Git และ deployment ที่ส่งไปแล้ว; การย้ายการเชื่อม Vercel ยังไม่ได้ทำในขั้นนี้
 - เอกสารในโฟลเดอร์นี้เป็นข้อมูลอ้างอิงสำหรับการเรียนและการ Demo
 - ห้ามบันทึก `.env`, token, password หรือ secret จริงลงในเอกสาร
 - AI Memory ไม่ได้รวมไว้ในชุดเอกสารสำหรับสมาชิก เนื่องจากเป็นบันทึกการทำงานเฉพาะเครื่องและ Agent
