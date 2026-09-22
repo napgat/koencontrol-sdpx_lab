@@ -92,7 +92,7 @@ export default function LandingPage() {
                   Pair<span className="text-indigo-400">Eval</span>
                 </span>
                 <span className="px-2 py-0.5 text-[10px] font-medium rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
-                  KMITL
+                  CE
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 hidden sm:block">
