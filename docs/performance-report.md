@@ -51,7 +51,7 @@ CI เปิด Next.js development server บน GitHub runner แล้วร�
 
 หลักฐาน: [CI run](https://github.com/napgat/koencontrol-sdpx_lab/actions/runs/36224640038) และ [ไฟล์ผล JSON](https://github.com/napgat/koencontrol-sdpx_lab/actions/runs/36224640038/artifacts/10900063741)
 
-ผลนี้วัด development server ใน CI ไม่ใช่ staging ค่าสูงสุดของคำขอหนึ่งครั้งคือ 537.93 ms แม้ p95 ผ่าน และยังไม่ได้พิสูจน์กรณี job `performance` แดงบน GitHub
+ผลนี้วัด development server ใน CI ไม่ใช่ staging ค่าสูงสุดของคำขอหนึ่งครั้งคือ 537.93 ms แม้ p95 ผ่าน; หลักฐานกรณี job แดงอยู่ในหัวข้อถัดไป
 
 ### ตรวจ CI อีกครั้งหลังเพิ่ม Preview staging
 
@@ -63,7 +63,9 @@ CI เปิด Next.js development server บน GitHub runner แล้วร�
 
 วันที่ 26 กันยายน 2026 เปลี่ยนเฉพาะ HTTP p95 threshold ใน `performance/load-test.js` ชั่วคราวจาก `<500 ms` เป็น `<1 ms` ที่ commit `461ec2a` แล้ว push ไป Draft PR #17. [GitHub Actions run #37](https://github.com/napgat/koencontrol-sdpx_lab/actions/runs/36251078067/job/108429180499?pr=17) แสดง job `performance` ล้ม: p95 จริง 11.31 ms เกิน `<1 ms` ขณะที่ checks 1,008/1,008 ผ่าน, HTTP failure rate 0%, list p95 7.1 ms, detail p95 12.53 ms และ draft p95 7.15 ms ผ่านเกณฑ์อื่น ๆ งาน lint/unit และ E2E สำเร็จ จึงเป็นหลักฐานว่า k6 threshold ทำให้ job แดงได้จริง ไม่ใช่การทดสอบ API ล้ม
 
-`performance` ยังไม่ได้เป็น required check ใน ruleset `Protect main`; หลักฐานนี้ยืนยันสถานะ job แดง ไม่ได้ยืนยันว่า ruleset บล็อก merge จาก performance โดยตรง ต้องคืน threshold `<500 ms`, push และตรวจ CI รอบใหม่ก่อนถือว่า branch พร้อม review
+คืน threshold `<500 ms` ที่ commit `23fb07e` และ push แล้ว [GitHub Actions run #38](https://github.com/napgat/koencontrol-sdpx_lab/actions/runs/36251469731/job/108430257193?pr=17) แสดง job `performance` ผ่าน: HTTP p95 10.72 ms, 169 journeys, 507 requests, checks 1,014/1,014, HTTP failures 0/507 และทุก threshold ผ่าน งาน lint/unit และ E2E ก็ผ่าน ส่วน `production-approval` ถูกข้ามตามเงื่อนไข PR ผลนี้ยังเป็นการวัด local development server ใน CI ไม่ใช่ Preview staging
+
+`performance` ยังไม่ได้เป็น required check ใน ruleset `Protect main`; หลักฐาน run #37 ยืนยันว่า k6 ทำให้ job แดง และ run #38 ยืนยันว่าคืนเกณฑ์แล้ว job กลับมาเขียว แต่ไม่ได้พิสูจน์ว่า ruleset บล็อก merge เพราะ performance โดยตรง
 
 ## ตรวจซ้ำบน local หลังเพิ่ม Preview guard
 
@@ -136,6 +138,6 @@ k6 คืน exit code `99` เพราะ list, detail และ draft เก�
 
 ## งานที่ยังเหลือ
 
-- พิสูจน์บน GitHub ว่า job `performance` แดงเมื่อ threshold ไม่ผ่าน แล้วคืนเกณฑ์เดิมให้ CI ผ่านอีกครั้ง
+- การพิสูจน์ job แดงและการคืนเกณฑ์ให้ job กลับมาผ่านเสร็จแล้ว (run #37 และ #38); ยังไม่ได้ทำให้ `performance` เป็น required check ใน ruleset
 - ใช้ข้อมูลแยกชั้นตาม AI Analysis เพื่อหาสาเหตุ latency ของ Preview ก่อนปรับโค้ดหรือเกณฑ์จริง
-- ตรวจ PR และเตรียมบันทึก Demo/AI Memory จากผลที่วัดได้
+- ตรวจ Draft PR และบันทึก Demo/AI Memory จากผลที่วัดได้ก่อนพิจารณา merge; ยังไม่เปลี่ยน `main` หรือ Production
