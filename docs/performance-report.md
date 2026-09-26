@@ -53,6 +53,19 @@ CI เปิด Next.js development server บน GitHub runner แล้วร�
 
 ผลนี้วัด development server ใน CI ไม่ใช่ staging ค่าสูงสุดของคำขอหนึ่งครั้งคือ 537.93 ms แม้ p95 ผ่าน และยังไม่ได้พิสูจน์กรณี job `performance` แดงบน GitHub
 
+## ตรวจซ้ำบน local หลังเพิ่ม Preview guard
+
+วันที่ 26 กันยายน 2026 ประมาณ 16:03–16:06 น. เวลาไทย รัน Next.js 16.3.6 development server ที่ `127.0.0.1:3000` พร้อม `LAB07_TEST_MODE=true` จากนั้นรัน `k6 run performance/smoke.js` (3 VUs / 30 วินาที) และ `k6 run performance/load-test.js` (สูงสุด 10 VUs / 2 นาที, `RUN_ID=local-recheck-20260926160414`) ตรวจ target และโปรไฟล์ก่อนรัน ทั้งสองคำสั่งคืน exit code `0`
+
+| รอบ | Requests | HTTP p95 | HTTP failures | ผลเพิ่ม |
+|---|---:|---:|---:|---|
+| Smoke health | 90 | 13.46 ms | 0/90 | checks 180/180 ผ่าน |
+| Journey | 504 | 15.95 ms | 0/504 | 168 journeys, checks 1,008/1,008, detail p95 17.17 ms, list p95 8.16 ms, draft p95 8.27 ms, journey errors 0/168 |
+
+เป็นการตรวจสคริปต์หลังแก้ ไม่ใช่ staging baseline; รอบนี้เก็บผลจาก output ของ k6 ในแชท ไม่มี summary JSON แยก และมีคำขอ detail สูงสุด 711.57 ms ซึ่งอาจรวมการ compile ของ dev server ยังสรุปสาเหตุไม่ได้
+
+ตรวจสิทธิ์ Preview แบบไม่เชื่อมฐานข้อมูลจริงด้วย production build บน local port 3001 และค่า environment ปลอมที่มีรูปแบบถูกต้อง: GET list/detail ได้ 200; POST draft และ POST cleanup ที่ไม่ส่ง write token ได้ 401 ทั้งคู่ การทดสอบนี้พิสูจน์เฉพาะการปฏิเสธคำขอ ไม่มีการเขียนหรืออ่าน Neon จริง
+
 ## Bottleneck และข้อจำกัด
 
 ยังระบุ bottleneck ไม่ได้จากผลรอบนี้ แอปรันใน dev mode บนเครื่องเดียว ข้อมูล assignment เป็นชุดตัวอย่าง และ draft อยู่ใน memory จึงยังไม่ได้วัดการเขียนฐานข้อมูล, auth, เครือข่าย staging หรือหลาย instance ค่า latency ที่ต่ำนี้ไม่ใช่หลักฐานว่าระบบบน staging หรือ production จะเร็วเท่ากัน
@@ -69,6 +82,7 @@ CI เปิด Next.js development server บน GitHub runner แล้วร�
 ## แผน Preview staging (ยังไม่วัด)
 
 - ใช้เฉพาะ Preview branch `codex/lab-07-performance` ใน Vercel project เดิม ซึ่งมี Deployment Protection; คำขอจาก k6 ต้องส่ง automation bypass ผ่าน header ไม่ใส่ใน URL หรือไฟล์รายงาน
+- ตรวจ Vercel แบบอ่านอย่างเดียว: `Require Log In` เปิดด้วย `Standard Protection`, system environment variables เปิดอยู่, `DATABASE_URL` เดิมใช้ทั้ง Production และ Preview และยังไม่มี automation bypass secret; ไม่เปลี่ยนการตั้งค่าเหล่านี้ระหว่างการตรวจ
 - วันที่ 26 กันยายน 2026 สร้าง Neon Free project `PairEval Lab07 Staging` (project ID `square-haze-26680706`) แยกจาก project `PairEval` เดิม ตรวจในหน้า Databases ว่ามี `lab07_preview` และรัน `performance/lab07-preview-schema.sql` ผ่าน SQL Editor ของฐานข้อมูลนี้; Neon แสดง 2 queries และ `Statement executed successfully` การสร้าง schema ยังไม่ใช่หลักฐานว่าแอปเชื่อมฐานข้อมูลได้
 - ตั้ง `LAB07_DATABASE_URL` และ `LAB07_WRITE_TOKEN` เป็นตัวแปรลับเฉพาะ Preview branch นี้ โดย token สุ่มอย่างน้อย 32 ตัวอักษรและแยกจาก Vercel automation bypass secret; ห้ามใช้หรือแก้ `DATABASE_URL` เดิมที่ครอบคลุม Production/Preview
 - หลังตั้งค่าและ deploy Preview ใหม่ ตรวจ health 200, GET assignment 200, POST ไม่มี write token ต้องได้ 401, POST ที่อนุญาตต้องได้ 201 และอ่าน draft กลับได้ 200 จากนั้นล้างด้วย `runId` เฉพาะรอบนั้น
