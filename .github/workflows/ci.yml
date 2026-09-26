@@ -82,6 +82,57 @@ jobs:
       - name: Clean up test containers
         if: always()
         run: docker compose -f compose.test.yaml --profile e2e down -v --remove-orphans
+  performance:
+    needs: lint-and-unit-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run local performance test
+        shell: bash
+        env:
+          BASE_URL: http://127.0.0.1:3000
+          RUN_ID: ci-${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          LAB07_TEST_MODE=true npm run dev -- --hostname 127.0.0.1 > "$RUNNER_TEMP/lab07-next.log" 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true' EXIT
+
+          ready=0
+          for i in {1..60}; do
+            if curl -fsS "$BASE_URL/api/health" > /dev/null 2>&1; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "Local app did not become ready"
+            exit 1
+          fi
+
+          k6 run --summary-export=performance/results.json performance/load-test.js
+
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: k6-results-${{ github.sha }}
+          path: performance/results.json
+          if-no-files-found: warn
   production-approval:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [lint-and-unit-test, e2e-tests]
