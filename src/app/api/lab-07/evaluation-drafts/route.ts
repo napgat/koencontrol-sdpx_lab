@@ -1,19 +1,32 @@
 import {
   createLab07Draft,
+  getLab07Assignment,
   lab07LocalTestEnabled,
 } from "@/lib/lab07-test-store";
 import { logger } from "@/lib/logger";
 import { withRequestLogging } from "@/lib/request-logging";
+import {
+  lab07PreviewEnabled,
+  lab07PreviewWriteAuthorized,
+} from "@/lib/lab07-preview-access";
+import {
+  createLab07PreviewDraft,
+  type PreviewDraftInput,
+} from "@/lib/lab07-preview-store";
 
 export async function POST(request: Request) {
   return withRequestLogging(
     request,
     "/api/lab-07/evaluation-drafts",
     async (requestId) => {
-      if (!lab07LocalTestEnabled()) {
+      const local = lab07LocalTestEnabled();
+      const preview = lab07PreviewEnabled();
+      if (!local && !preview) {
         return Response.json({ error: "Not found" }, { status: 404 });
       }
-
+      if (preview && !lab07PreviewWriteAuthorized(request)) {
+        return Response.json({ error: "Unauthorized" }, { status: 401 });
+      }
       const body: unknown = await request.json().catch(() => null);
       if (typeof body !== "object" || body === null || Array.isArray(body)) {
         logger.warn({
@@ -41,14 +54,21 @@ export async function POST(request: Request) {
         });
         return Response.json({ error: "Invalid draft" }, { status: 400 });
       }
+      const assignment = getLab07Assignment(data.assignmentId);
+      if (!assignment || !assignment.pairs.some((pair) => pair.id === data.pairId)) {
+        return Response.json({ error: "Pair not found" }, { status: 404 });
+      }
 
       const saveStart = performance.now();
-      const result = createLab07Draft({
+      const input: PreviewDraftInput = {
         assignmentId: data.assignmentId,
         pairId: data.pairId,
         choice: data.choice,
         runId: data.runId,
-      });
+      };
+      const result = preview
+        ? await createLab07PreviewDraft(input)
+        : createLab07Draft(input);
 
       if (result === "not-found") {
         logger.warn({

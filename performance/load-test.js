@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check, group, sleep } from 'k6';
 import { Rate, Trend } from 'k6/metrics';
+import { lab07RunId, lab07Target } from './target.js';
 
 const errors = new Rate('errors');
 const draftLatency = new Trend('draft_latency', true);
@@ -17,14 +18,16 @@ export const options = {
     errors: ['rate<0.05'],
     draft_latency: ['p(95)<300'],
     'http_req_duration{name:list}': ['p(95)<300'],
+    'http_req_duration{name:detail}': ['p(95)<300'],
   },
 };
 
-const baseUrl = (__ENV.BASE_URL || 'http://127.0.0.1:3000').replace(/\/$/, '');
-const runId = __ENV.RUN_ID || 'local-manual';
+const target = lab07Target({ write: true });
+const baseUrl = target.baseUrl;
+const runId = lab07RunId(target);
 
-if (!/^http:\/\/(127\.0\.0\.1|localhost):3000$/.test(baseUrl)) {
-  throw new Error('This first version may target local port 3000 only.');
+export function setup() {
+  console.log(`Lab 07 load target: ${baseUrl}; max 10 VUs for 2m; runId: ${runId}`);
 }
 
 function jsonOrNull(response) {
@@ -41,6 +44,7 @@ export default function () {
 
   group('Browse and select', () => {
     const listResponse = http.get(`${baseUrl}/api/lab-07/assignments`, {
+      headers: target.headers,
       tags: { name: 'list' },
     });
     const list = jsonOrNull(listResponse);
@@ -62,7 +66,7 @@ export default function () {
 
     const detailResponse = http.get(
       `${baseUrl}/api/lab-07/assignments/${encodeURIComponent(list[0].id)}`,
-      { tags: { name: 'detail' } },
+      { headers: target.headers, tags: { name: 'detail' } },
     );
     const detail = jsonOrNull(detailResponse);
 
@@ -100,7 +104,7 @@ export default function () {
         runId,
       }),
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...target.headers, 'Content-Type': 'application/json' },
         tags: { name: 'create' },
       },
     );
