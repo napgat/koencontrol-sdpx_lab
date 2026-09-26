@@ -13,7 +13,7 @@ export const options = {
     { duration: '30s', target: 0 },
   ],
   thresholds: {
-    http_req_duration: ['p(95)<500'],
+    http_req_duration: ['p(95)<1'],
     http_req_failed: ['rate<0.01'],
     errors: ['rate<0.05'],
     draft_latency: ['p(95)<300'],
