@@ -41,7 +41,15 @@
 
 วันที่ 26 กันยายน 2026 ทดสอบกับ `http://127.0.0.1:3000` โดยทำสำเนา `performance/load-test.js` ไว้ในโฟลเดอร์ชั่วคราว และเปลี่ยนเฉพาะเกณฑ์ HTTP p95 จาก `<500 ms` เป็น `<1 ms` ใช้ load profile เดิม สูงสุด 10 VUs นาน 2 นาที ผลคือ 168 journeys, 504 HTTP requests, checks ผ่าน 1,008/1,008 และ HTTP failures 0/504 แต่ HTTP p95 เท่ากับ 13.17 ms ทำให้ threshold ไม่ผ่านและ k6 คืน exit code `99` จากนั้นลบสำเนาชั่วคราว โดยไฟล์สคริปต์ต้นฉบับยังใช้เกณฑ์เดิม
 
-ผลนี้ยืนยันการทำงานของ pass/fail ใน k6 บน local เท่านั้น; ยังไม่ได้ยืนยันว่า job `performance` รันผ่านหรือแดงบน GitHub Actions
+ผลนี้ยืนยันการทำงานของ pass/fail ใน k6 บน local เท่านั้น
+
+## ผล CI บน GitHub Actions
+
+CI เปิด Next.js development server บน GitHub runner แล้วรัน `performance/load-test.js` สูงสุด 10 VUs นาน 2 นาที ผลคือ 169 journeys, 507 HTTP requests, checks ผ่าน 1,014/1,014, HTTP failures 0/507 และ HTTP p95 รวม 9.27 ms ทุก threshold ผ่าน โดย job `performance` สำเร็จ
+
+หลักฐาน: [CI run](https://github.com/napgat/koencontrol-sdpx_lab/actions/runs/36224640038) และ [ไฟล์ผล JSON](https://github.com/napgat/koencontrol-sdpx_lab/actions/runs/36224640038/artifacts/10900063741)
+
+ผลนี้วัด development server ใน CI ไม่ใช่ staging ค่าสูงสุดของคำขอหนึ่งครั้งคือ 537.93 ms แม้ p95 ผ่าน และยังไม่ได้พิสูจน์กรณี job `performance` แดงบน GitHub
 
 ## Bottleneck และข้อจำกัด
 
