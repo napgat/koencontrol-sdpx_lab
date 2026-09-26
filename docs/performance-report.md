@@ -59,6 +59,12 @@ CI เปิด Next.js development server บน GitHub runner แล้วร�
 
 หลักฐาน: [CI run](https://github.com/napgat/koencontrol-sdpx_lab/actions/runs/36232527865) และ [k6 results artifact](https://github.com/napgat/koencontrol-sdpx_lab/actions/runs/36232527865/artifacts/10902991946)
 
+### พิสูจน์ CI gate กรณีไม่ผ่าน
+
+วันที่ 26 กันยายน 2026 เปลี่ยนเฉพาะ HTTP p95 threshold ใน `performance/load-test.js` ชั่วคราวจาก `<500 ms` เป็น `<1 ms` ที่ commit `461ec2a` แล้ว push ไป Draft PR #17. [GitHub Actions run #37](https://github.com/napgat/koencontrol-sdpx_lab/actions/runs/36251078067/job/108429180499?pr=17) แสดง job `performance` ล้ม: p95 จริง 11.31 ms เกิน `<1 ms` ขณะที่ checks 1,008/1,008 ผ่าน, HTTP failure rate 0%, list p95 7.1 ms, detail p95 12.53 ms และ draft p95 7.15 ms ผ่านเกณฑ์อื่น ๆ งาน lint/unit และ E2E สำเร็จ จึงเป็นหลักฐานว่า k6 threshold ทำให้ job แดงได้จริง ไม่ใช่การทดสอบ API ล้ม
+
+`performance` ยังไม่ได้เป็น required check ใน ruleset `Protect main`; หลักฐานนี้ยืนยันสถานะ job แดง ไม่ได้ยืนยันว่า ruleset บล็อก merge จาก performance โดยตรง ต้องคืน threshold `<500 ms`, push และตรวจ CI รอบใหม่ก่อนถือว่า branch พร้อม review
+
 ## ตรวจซ้ำบน local หลังเพิ่ม Preview guard
 
 วันที่ 26 กันยายน 2026 ประมาณ 16:03–16:06 น. เวลาไทย รัน Next.js 16.3.6 development server ที่ `127.0.0.1:3000` พร้อม `LAB07_TEST_MODE=true` จากนั้นรัน `k6 run performance/smoke.js` (3 VUs / 30 วินาที) และ `k6 run performance/load-test.js` (สูงสุด 10 VUs / 2 นาที, `RUN_ID=local-recheck-20260926160414`) ตรวจ target และโปรไฟล์ก่อนรัน ทั้งสองคำสั่งคืน exit code `0`
